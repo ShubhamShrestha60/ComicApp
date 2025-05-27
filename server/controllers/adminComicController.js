@@ -1,6 +1,8 @@
 const Upload = require('../model/Upload');
 const path = require('path');
 const fs = require('fs');
+const Comics = require('../model/comic.model');
+const Notif = require('../model/notif.model');
 
 // Helper to move files
 const moveFile = (file, folderName) => {
@@ -13,61 +15,110 @@ const moveFile = (file, folderName) => {
 // GET all comics (admin view)
 const getAllComics = async (req, res) => {
   try {
-    const comics = await Upload.find()
-      .populate('uploadedBy', 'username email role')
-      .sort({ createdAt: -1 }) // Sort by newest first
-      .select('title author genres status summary coverImageUrl chapterFiles uploadedBy approved createdAt');
-
-    // Transform the data to include status and uploader info
-    const transformedComics = comics.map(comic => ({
-      ...comic.toObject(),
-      status: comic.approved === null ? 'pending' : comic.approved ? 'approved' : 'rejected',
-      uploadedBy: comic.uploadedBy ? {
-        id: comic.uploadedBy._id,
-        username: comic.uploadedBy.username,
-        email: comic.uploadedBy.email,
-        role: comic.uploadedBy.role,
-        isAdmin: comic.uploadedBy.role === 'admin'
-      } : null,
-      isAdminUpload: comic.uploadedBy?.role === 'admin'
-    }));
-
-    res.status(200).json(transformedComics);
-  } catch (error) {
-    console.error('Failed to fetch comics:', error);
-    res.status(500).json({ message: 'Failed to fetch comics', error: error.message });
+    console.log('Fetching all comics');
+    const comics = await Comics.find();
+    res.json(comics);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
 // PATCH - Approve a comic
+// const approveComic = async (req, res) => {
+//   try {
+//     const comic = await Upload.findByIdAndUpdate(
+//       req.params.id,
+//       { approved: true },
+//       { new: true }
+//     );
+//     if (!comic) return res.status(404).json({ message: 'Comic not found' });
+//     res.status(200).json({ message: 'Comic approved', comic });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Failed to approve comic', error });
+//   }
+// };
+
+// PATCH - Reject a comic
+// const rejectComic = async (req, res) => {
+//   try {
+//     const comic = await Upload.findByIdAndUpdate(
+//       req.params.id,
+//       { approved: false },
+//       { new: true }
+//     );
+//     if (!comic) return res.status(404).json({ message: 'Comic not found' });
+//     res.status(200).json({ message: 'Comic rejected', comic });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Failed to reject comic', error });
+//   }
+// };
+
+
+//approve comic
+
 const approveComic = async (req, res) => {
   try {
-    const comic = await Upload.findByIdAndUpdate(
-      req.params.id,
-      { approved: true },
+    const comicId = req.params.id;
+    const userId = req.params.userid;
+
+    // Update comic status
+    const comic = await Comics.findByIdAndUpdate(
+      comicId,
+      { isapproved: true },
       { new: true }
     );
-    if (!comic) return res.status(404).json({ message: 'Comic not found' });
-    res.status(200).json({ message: 'Comic approved', comic });
+
+    if (!comic) {
+      return res.status(404).json({ error: 'Comic not found' });
+    }
+
+    // Only try to create notification if we have a valid userId
+    if (userId && userId !== 'undefined' && userId !== 'null') {
+      try {
+        const notification = new Notif({
+          user: userId,
+          message: `Your comic "${comic.title}" has been approved and is now live on ComicZone!`
+        });
+        await notification.save();
+      } catch (notifError) {
+        console.error('Error creating notification:', notifError);
+        // Continue with the approval process even if notification fails
+      }
+    }
+
+    res.status(200).json({ 
+      message: 'Comic approved successfully', 
+      comic
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to approve comic', error });
+    console.error('Error approving comic:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
-// PATCH - Reject a comic
+//reject comic
 const rejectComic = async (req, res) => {
   try {
-    const comic = await Upload.findByIdAndUpdate(
-      req.params.id,
-      { approved: false },
+    const comicId = req.params.id;
+    const comic = await Comics.findByIdAndUpdate(
+      comicId,
+      { isapproved: false },
       { new: true }
     );
-    if (!comic) return res.status(404).json({ message: 'Comic not found' });
-    res.status(200).json({ message: 'Comic rejected', comic });
+
+    if (!comic) {
+      return res.status(404).json({ error: 'Comic not found' });
+    }
+
+    res.status(200).json({ message: 'Comic rejected successfully', comic });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to reject comic', error });
+    console.error('Error rejecting comic:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+}
+
+
+
 
 // Upload comic (admin)
 const uploadComic = async (req, res) => {

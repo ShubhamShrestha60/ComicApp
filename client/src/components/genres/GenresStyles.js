@@ -2,8 +2,8 @@ import styled from 'styled-components';
 
 export const GenresContainer = styled.div`
   min-height: 100vh;
-  background-color: #1a1f25;
-  color: #ffffff;
+  background-color: ${props => props.theme.colors.background};
+  color: ${props => props.theme.colors.text};
   display: flex;
   flex-direction: column;
   position: relative;
@@ -30,14 +30,14 @@ export const GenreHeader = styled.div`
 
 export const GenreTitle = styled.h2`
   font-size: 1.5rem;
-  color: #00bcd4;
+  color: ${props => props.theme.colors.primary};
   font-weight: 600;
 `;
 
 export const ViewAllButton = styled.button`
   background: transparent;
-  border: 1px solid #00bcd4;
-  color: #00bcd4;
+  border: 1px solid ${props => props.theme.colors.primary};
+  color: ${props => props.theme.colors.primary};
   padding: 0.5rem 1rem;
   border-radius: 20px;
   cursor: pointer;
@@ -45,8 +45,8 @@ export const ViewAllButton = styled.button`
   font-size: 0.9rem;
 
   &:hover {
-    background: #00bcd4;
-    color: #ffffff;
+    background: ${props => props.theme.colors.primary};
+    color: ${props => props.theme.colors.text};
   }
 `;
 
@@ -69,7 +69,7 @@ export const ComicsGrid = styled.div`
 `;
 
 export const ComicCard = styled.div`
-  background-color: #2a2f35;
+  background-color: ${props => props.theme.colors.secondary};
   border-radius: 12px;
   overflow: hidden;
   transition: transform 0.3s ease;
@@ -97,7 +97,7 @@ export const ComicInfo = styled.div`
 
 export const ComicTitle = styled.h3`
   font-size: 1.1rem;
-  color: #ffffff;
+  color: ${props => props.theme.colors.text};
   margin: 0;
   font-weight: 500;
 `;
@@ -114,16 +114,16 @@ export const ComicStatus = styled.span`
 export const ReadMoreButton = styled.button`
   padding: 0.75rem;
   border-radius: 8px;
-  border: 1px solid #00bcd4;
+  border: 1px solid ${props => props.theme.colors.primary};
   background-color: transparent;
-  color: #00bcd4;
+  color: ${props => props.theme.colors.primary};
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: auto;
 
   &:hover {
-    background-color: #00bcd4;
-    color: #ffffff;
+    background-color: ${props => props.theme.colors.primary};
+    color: ${props => props.theme.colors.text};
   }
 `;
 
@@ -132,7 +132,7 @@ export const GenreNavigation = styled.div`
   gap: 1rem;
   margin-bottom: 2rem;
   padding: 1rem;
-  background-color: #2a2f35;
+  background-color: ${props => props.theme.colors.secondary};
   border-radius: 12px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -142,11 +142,11 @@ export const GenreNavigation = styled.div`
   }
 
   &::-webkit-scrollbar-track {
-    background: #1a1f25;
+    background: ${props => props.theme.colors.background};
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #00bcd4;
+    background: ${props => props.theme.colors.primary};
     border-radius: 4px;
   }
 `;
@@ -155,8 +155,8 @@ export const GenreButton = styled.button`
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   border: none;
-  background-color: ${props => props.active ? '#00bcd4' : 'transparent'};
-  color: ${props => props.active ? '#ffffff' : '#b0b0b0'};
+  background-color: ${props => props.active ? props.theme.colors.primary : 'transparent'};
+  color: ${props => props.active ? props.theme.colors.text : props.theme.colors.text + '99'};
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
@@ -164,7 +164,7 @@ export const GenreButton = styled.button`
   white-space: nowrap;
 
   &:hover {
-    background-color: ${props => props.active ? '#00bcd4' : 'rgba(0, 188, 212, 0.1)'};
-    color: #ffffff;
+    background-color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.primary + '22'};
+    color: ${props => props.theme.colors.text};
   }
 `; 

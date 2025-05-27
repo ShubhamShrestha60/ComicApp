@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Navbar from '../shared/Navbar';
 import {
   GenresContainer,
@@ -29,79 +30,39 @@ const GENRES = [
   'Sci-Fi',
   'Slice of Life',
   'Comedy',
-  'Drama'
+  'Drama',
+  'Adventure'
 ];
-
-// Mock data for comics with genres
-const mockComics = {
-  Action: [
-    { id: 1, title: 'Hero\'s Journey', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 2, title: 'Battle Arena', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 3, title: 'Power Strike', status: 'Completed', image: 'https://via.placeholder.com/300x400' },
-    { id: 4, title: 'Warrior\'s Path', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' }
-  ],
-  Thriller: [
-    { id: 5, title: 'Dark Mystery', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 6, title: 'Silent Whispers', status: 'Completed', image: 'https://via.placeholder.com/300x400' },
-    { id: 7, title: 'The Unknown', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 8, title: 'Midnight Tales', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' }
-  ],
-  Romance: [
-    { id: 9, title: 'First Love', status: 'Completed', image: 'https://via.placeholder.com/300x400' },
-    { id: 10, title: 'Sweet Days', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 11, title: 'Love Story', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 12, title: 'Heart Beat', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' }
-  ],
-  Fantasy: [
-    { id: 13, title: 'Dragon\'s Crown', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 14, title: 'Magic Academy', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 15, title: 'Enchanted Realm', status: 'Completed', image: 'https://via.placeholder.com/300x400' },
-    { id: 16, title: 'Mystic Knights', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' }
-  ],
-  Mystery: [
-    { id: 17, title: 'Detective\'s Note', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 18, title: 'Hidden Clues', status: 'Completed', image: 'https://via.placeholder.com/300x400' },
-    { id: 19, title: 'The Perfect Crime', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 20, title: 'Cold Case', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' }
-  ],
-  Horror: [
-    { id: 21, title: 'Haunted House', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 22, title: 'Dark Secrets', status: 'Completed', image: 'https://via.placeholder.com/300x400' },
-    { id: 23, title: 'Nightmare City', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 24, title: 'The Cursed', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' }
-  ],
-  'Sci-Fi': [
-    { id: 25, title: 'Space Colony', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 26, title: 'Cyber World', status: 'Completed', image: 'https://via.placeholder.com/300x400' },
-    { id: 27, title: 'Time Travelers', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 28, title: 'Android Dreams', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' }
-  ],
-  'Slice of Life': [
-    { id: 29, title: 'Daily Life', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 30, title: 'Coffee & Dreams', status: 'Completed', image: 'https://via.placeholder.com/300x400' },
-    { id: 31, title: 'Campus Days', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 32, title: 'Working Life', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' }
-  ],
-  Comedy: [
-    { id: 33, title: 'Laugh Out Loud', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 34, title: 'Funny Business', status: 'Completed', image: 'https://via.placeholder.com/300x400' },
-    { id: 35, title: 'School Humor', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 36, title: 'Comedy Club', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' }
-  ],
-  Drama: [
-    { id: 37, title: 'Family Ties', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 38, title: 'Life Changes', status: 'Completed', image: 'https://via.placeholder.com/300x400' },
-    { id: 39, title: 'Growing Pains', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' },
-    { id: 40, title: 'Emotional Path', status: 'Ongoing', image: 'https://via.placeholder.com/300x400' }
-  ]
-};
 
 const Genres = () => {
   const navigate = useNavigate();
   const [activeGenre, setActiveGenre] = useState(GENRES[0]);
+  const [comics, setComics] = useState([]);
+  const [viewAll, setViewAll] = useState(false);
 
-  const handleViewAll = (genre) => {
-    navigate(`/genres/${genre.toLowerCase()}`);
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/get/comics/approved')
+      .then(response => {
+        setComics(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching comics:', error);
+      });
+  }, []);
+
+  // Group comics by genre
+  const comicsByGenre = GENRES.reduce((acc, genre) => {
+    acc[genre] = comics.filter(comic => comic.genres && comic.genres.includes(genre));
+    return acc;
+  }, {});
+
+  const handleViewAll = () => {
+    setViewAll(true);
+  };
+
+  const handleTabClick = (genre) => {
+    setActiveGenre(genre);
+    setViewAll(false);
   };
 
   return (
@@ -112,30 +73,30 @@ const Genres = () => {
           {GENRES.map(genre => (
             <GenreButton
               key={genre}
-              active={activeGenre === genre}
-              onClick={() => setActiveGenre(genre)}
+              active={activeGenre === genre && !viewAll}
+              onClick={() => handleTabClick(genre)}
             >
               {genre}
             </GenreButton>
           ))}
         </GenreNavigation>
 
-        {GENRES.map(genre => (
-          <GenreSection key={genre} style={{ display: activeGenre === genre ? 'block' : 'none' }}>
+        {viewAll ? (
+          <GenreSection key="all-comics">
             <GenreHeader>
-              <GenreTitle>{genre}</GenreTitle>
-              <ViewAllButton onClick={() => handleViewAll(genre)}>
-                View All
+              <GenreTitle>All Comics</GenreTitle>
+              <ViewAllButton onClick={() => setViewAll(false)}>
+                Back
               </ViewAllButton>
             </GenreHeader>
             <ComicsGrid>
-              {(mockComics[genre] || []).map(comic => (
-                <ComicCard key={comic.id}>
-                  <ComicImage src={comic.image} alt={comic.title} />
+              {comics.map(comic => (
+                <ComicCard key={comic._id}>
+                  <ComicImage src={comic.coverImage} alt={comic.title} />
                   <ComicInfo>
                     <ComicTitle>{comic.title}</ComicTitle>
                     <ComicStatus status={comic.status}>{comic.status}</ComicStatus>
-                    <ReadMoreButton onClick={() => navigate(`/comic/${comic.id}`)}>
+                    <ReadMoreButton onClick={() => navigate(`/comic/${comic._id}`)}>
                       Read More
                     </ReadMoreButton>
                   </ComicInfo>
@@ -143,10 +104,33 @@ const Genres = () => {
               ))}
             </ComicsGrid>
           </GenreSection>
-        ))}
+        ) : (
+          <GenreSection key={activeGenre}>
+            <GenreHeader>
+              <GenreTitle>{activeGenre}</GenreTitle>
+              <ViewAllButton onClick={handleViewAll}>
+                View All
+              </ViewAllButton>
+            </GenreHeader>
+            <ComicsGrid>
+              {(comicsByGenre[activeGenre] || []).slice(0, 6).map(comic => (
+                <ComicCard key={comic._id}>
+                  <ComicImage src={comic.coverImage} alt={comic.title} />
+                  <ComicInfo>
+                    <ComicTitle>{comic.title}</ComicTitle>
+                    <ComicStatus status={comic.status}>{comic.status}</ComicStatus>
+                    <ReadMoreButton onClick={() => navigate(`/comic/${comic._id}`)}>
+                      Read More
+                    </ReadMoreButton>
+                  </ComicInfo>
+                </ComicCard>
+              ))}
+            </ComicsGrid>
+          </GenreSection>
+        )}
       </GenresContent>
     </GenresContainer>
   );
 };
 
-export default Genres; 
+export default Genres;

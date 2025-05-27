@@ -569,4 +569,39 @@ export const UploaderInfo = styled.div`
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
+`;
+
+export const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
+  color: ${props => props.theme.colors.text};
+
+  span {
+    font-size: 0.9rem;
+    color: ${props => props.theme.colors.text}99;
+  }
+`;
+
+export const PaginationButton = styled.button`
+  padding: 0.5rem 1rem;
+  border: 1px solid ${props => props.theme.colors.primary};
+  border-radius: 6px;
+  background-color: ${props => props.disabled ? props.theme.colors.background : 'transparent'};
+  color: ${props => props.disabled ? props.theme.colors.text + '99' : props.theme.colors.primary};
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: ${props => props.theme.colors.primary}20;
+  }
+
+  &:disabled {
+    border-color: ${props => props.theme.colors.text}40;
+  }
 `; 

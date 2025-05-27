@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StatsGrid,
   StatCard,
@@ -12,33 +12,67 @@ import {
   PageTitle,
   Subtitle
 } from './AdminStyles';
+import api from '../../services/api';
 
 const AdminDashboard = () => {
+  const [comics, setComics] = useState([]);
+
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await api.get('/admin/users');
+        setUsers(res.data);
+      } catch (err) {
+        console.error('Failed to fetch users:', err);
+        // Set empty array if API call fails
+        setUsers([]);
+      }
+    };
+    fetchUsers();
+  }, []);
   const stats = {
     users: {
-      total: 1249,
-      newThisMonth: 49
+      total: users.length,
+      newThisMonth: users.length
     },
     comics: {
-      total: 382,
-      newThisMonth: 18
+      total: comics.length,
+      newThisMonth: comics.length
     },
     pendingReviews: {
       total: 57,
       message: 'Needs your attention'
     },
     popularGenre: {
-      name: 'Fantasy',
+      name: comics.length > 0 ? comics[0].genres[0] : 'N/A',
       message: 'Based on user engagement'
     }
   };
 
-  const recentComics = [
-    { title: 'Dragon Slayer Chronicles', author: 'Jane Doe', status: 'published' },
-    { title: 'Moonlight Shadows', author: 'John Smith', status: 'pending' },
-    { title: 'Urban Tales', author: 'Alice Williams', status: 'published' },
-    { title: 'Cosmic Adventures', author: 'Bob Johnson', status: 'pending' }
-  ];
+  const fetchComics = async () => {
+    try {
+
+      const res = await api.get('/admin/comics');
+      setComics(res.data);
+    } catch (error) {
+      console.error('Failed to fetch comics:', error);
+      setComics([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchComics();
+  }, []);
+
+
+
+  const recentComics = comics.map(comic => ({
+    title: comic.title,
+    author: comic.author,
+    status: comic.status
+  }));
 
   return (
     <>

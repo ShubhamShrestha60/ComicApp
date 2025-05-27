@@ -28,7 +28,7 @@ router.post(
 );
 
 // PATCH to approve comic
-router.patch('/:id/approve', approveComic);
+router.patch('/:id/approve/:userid', approveComic);
 
 // PATCH to reject comic
 router.patch('/:id/reject', rejectComic);

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../shared/Navbar';
+import axios from 'axios';
 import {
   ExploreContainer,
   ExploreContent,
@@ -16,76 +17,31 @@ import {
   ReadMoreButton
 } from './ExploreStyles';
 
-// Mock data for comics
-const mockComics = [
-  {
-    id: 1,
-    title: 'The Last Hero',
-    image: 'https://via.placeholder.com/300x400',
-    genre: 'Action/Adventure',
-    status: 'Ongoing',
-    popularity: 'high',
-    trending: true
-  },
-  {
-    id: 2,
-    title: 'Space Adventures',
-    image: 'https://via.placeholder.com/300x400',
-    genre: 'Sci-Fi',
-    status: 'Completed',
-    popularity: 'medium',
-    trending: false
-  },
-  {
-    id: 3,
-    title: 'Mystic World',
-    image: 'https://via.placeholder.com/300x400',
-    genre: 'Fantasy',
-    status: 'Ongoing',
-    popularity: 'high',
-    trending: true
-  },
-  {
-    id: 4,
-    title: 'Cyber Dreams',
-    image: 'https://via.placeholder.com/300x400',
-    genre: 'Cyberpunk',
-    status: 'Ongoing',
-    popularity: 'medium',
-    trending: true
-  },
-  {
-    id: 5,
-    title: 'Neon Nights',
-    image: 'https://via.placeholder.com/300x400',
-    genre: 'Sci-Fi/Noir',
-    status: 'Completed',
-    popularity: 'high',
-    trending: false
-  },
-  {
-    id: 6,
-    title: 'Fantasy Quest',
-    image: 'https://via.placeholder.com/300x400',
-    genre: 'Fantasy/Adventure',
-    status: 'Ongoing',
-    popularity: 'high',
-    trending: true
-  }
-];
-
 const Explore = () => {
-  const navigate = useNavigate();
+  const [comics, setComics] = useState([]);
   const [activeTab, setActiveTab] = useState('all');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/get/comics/approved')
+      .then(response => {
+        setComics(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching comics:', error);
+      });
+  }, []);
 
   const filterComics = () => {
     switch (activeTab) {
       case 'popular':
-        return mockComics.filter(comic => comic.popularity === 'high');
+        // You can define your own logic for "popular" if available in data
+        return comics.filter(comic => comic.popularity === 'high');
       case 'trending':
-        return mockComics.filter(comic => comic.trending);
+        // You can define your own logic for "trending" if available in data
+        return comics.filter(comic => comic.trending);
       default:
-        return mockComics;
+        return comics;
     }
   };
 
@@ -94,20 +50,20 @@ const Explore = () => {
       <Navbar />
       <ExploreContent>
         <ToggleContainer>
-          <ToggleButton 
-            active={activeTab === 'all'} 
+          <ToggleButton
+            active={activeTab === 'all'}
             onClick={() => setActiveTab('all')}
           >
             All Comics
           </ToggleButton>
-          <ToggleButton 
-            active={activeTab === 'popular'} 
+          <ToggleButton
+            active={activeTab === 'popular'}
             onClick={() => setActiveTab('popular')}
           >
             Popular Comics
           </ToggleButton>
-          <ToggleButton 
-            active={activeTab === 'trending'} 
+          <ToggleButton
+            active={activeTab === 'trending'}
             onClick={() => setActiveTab('trending')}
           >
             Trending Comics
@@ -116,13 +72,15 @@ const Explore = () => {
 
         <ComicsGrid>
           {filterComics().map(comic => (
-            <ComicCard key={comic.id}>
-              <ComicImage src={comic.image} alt={comic.title} />
+            <ComicCard key={comic._id}>
+              <ComicImage src={comic.coverImage} alt={comic.title} />
               <ComicInfo>
                 <ComicTitle>{comic.title}</ComicTitle>
-                <ComicGenre>{comic.genre}</ComicGenre>
+                <ComicGenre>
+                  {Array.isArray(comic.genres) ? comic.genres.join(', ') : comic.genres}
+                </ComicGenre>
                 <ComicStatus status={comic.status}>{comic.status}</ComicStatus>
-                <ReadMoreButton onClick={() => navigate(`/comic/${comic.id}`)}>
+                <ReadMoreButton onClick={() => navigate(`/comic/${comic._id}`)}>
                   Read More
                 </ReadMoreButton>
               </ComicInfo>
@@ -134,4 +92,4 @@ const Explore = () => {
   );
 };
 
-export default Explore; 
+export default Explore;

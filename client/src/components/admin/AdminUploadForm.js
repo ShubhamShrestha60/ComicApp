@@ -11,6 +11,7 @@ import {
   PreviewImage
 } from './AdminStyles';
 import api from '../../services/api';
+import axios from 'axios';
 
 const AVAILABLE_GENRES = [
   'Action', 'Adventure', 'Comedy', 'Drama', 'Fantasy',
@@ -91,7 +92,7 @@ const AdminUploadForm = ({ onClose, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Form submission started');
-    
+
     if (!validateForm()) {
       console.log('Form validation failed:', errors);
       return;
@@ -101,10 +102,10 @@ const AdminUploadForm = ({ onClose, onSuccess }) => {
     try {
       setLoading(true);
       const formDataToSend = new FormData();
-      
+
       // Log form data before sending
       console.log('Form data before sending:', formData);
-      
+
       // Append all form fields
       Object.keys(formData).forEach(key => {
         if (key === 'genres') {
@@ -132,7 +133,8 @@ const AdminUploadForm = ({ onClose, onSuccess }) => {
       }
 
       console.log('Sending request to /admin/comics/upload');
-      const response = await api.post('/admin/comics/upload', formDataToSend, {
+      formDataToSend.append('uploadedBy', 'admin');
+      const response = await axios.post('http://localhost:5000/api/comics/upload', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -270,19 +272,19 @@ const AdminUploadForm = ({ onClose, onSuccess }) => {
           {errors.submit && <ErrorMessage>{errors.submit}</ErrorMessage>}
 
           <FormActions>
-            <ActionButton 
-              type="button" 
+            <ActionButton
+              type="button"
               onClick={() => {
                 console.log('Cancel button clicked');
                 onClose();
-              }} 
+              }}
               disabled={loading}
             >
               Cancel
             </ActionButton>
-            <ActionButton 
-              type="submit" 
-              success 
+            <ActionButton
+              type="submit"
+              success
               disabled={loading}
               style={{ marginLeft: '1rem' }}
               onClick={() => console.log('Submit button clicked')}

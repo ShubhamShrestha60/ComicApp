@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import { theme } from './theme';
 import { GlobalStyles } from './GlobalStyles';
 import styled from 'styled-components';
 import { AuthProvider } from './context/AuthContext';
@@ -24,6 +23,7 @@ import ChapterPage from './components/chapters/ChapterPage';
 import ComicsPage from './components/admin/ComicsPage';
 import ReviewsPage from './components/admin/ReviewsPage';
 import GenresPage from './components/admin/GenresPage';
+import { ColorBlindProvider, useColorBlind } from './ColorBlindContext';
 
 // Styled Components
 const AppContainer = styled.div`
@@ -35,7 +35,8 @@ const AppContainer = styled.div`
   `}
 `;
 
-function App() {
+function AppContent() {
+  const { theme } = useColorBlind();
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />
@@ -74,6 +75,14 @@ function App() {
         </Router>
       </AuthProvider>
     </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <ColorBlindProvider>
+      <AppContent />
+    </ColorBlindProvider>
   );
 }
 

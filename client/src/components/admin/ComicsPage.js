@@ -27,6 +27,7 @@ const ComicsPage = () => {
     try {
       setLoading(true);
       const res = await api.get('/admin/comics');
+    
       setComics(res.data);
     } catch (error) {
       console.error('Failed to fetch comics:', error);
@@ -42,25 +43,24 @@ const ComicsPage = () => {
 
   const filteredComics = comics.filter(comic => {
     if (!comic) return false;
-    
+
     const searchLower = searchQuery.toLowerCase();
     const titleMatch = comic.title?.toLowerCase().includes(searchLower) || false;
     const authorMatch = comic.author?.toLowerCase().includes(searchLower) || false;
-    const genreMatch = comic.genres?.some(genre => 
+    const genreMatch = comic.genres?.some(genre =>
       genre?.toLowerCase().includes(searchLower)
     ) || false;
 
     return titleMatch || authorMatch || genreMatch;
   });
 
-  const handleApprove = async (comicId) => {
+  const handleApprove = async (comicId, userid) => {
     try {
       setLoading(true);
-      await api.patch(`/admin/comics/${comicId}/approve`);
-      // Update local state immediately for better UX
-      setComics(comics.map(comic => 
-        comic._id === comicId ? { ...comic, status: 'approved' } : comic
-      ));
+      const response = await api.patch(`/admin/comics/${comicId}/approve/${userid}`);
+      if (response.status === 200) {
+        await fetchComics(); // Only refetch on success
+      }
     } catch (error) {
       console.error('Approve failed:', error);
       alert('Failed to approve comic. Please try again.');
@@ -72,11 +72,10 @@ const ComicsPage = () => {
   const handleReject = async (comicId) => {
     try {
       setLoading(true);
-      await api.patch(`/admin/comics/${comicId}/reject`);
-      // Update local state immediately for better UX
-      setComics(comics.map(comic => 
-        comic._id === comicId ? { ...comic, status: 'rejected' } : comic
-      ));
+      const response = await api.patch(`/admin/comics/${comicId}/reject`);
+      if (response.status === 200) {
+        await fetchComics(); // Only refetch on success
+      }
     } catch (error) {
       console.error('Reject failed:', error);
       alert('Failed to reject comic. Please try again.');
@@ -85,35 +84,30 @@ const ComicsPage = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'approved':
-        return 'success';
-      case 'rejected':
-        return 'danger';
-      case 'pending':
-        return 'warning';
-      default:
-        return 'warning';
-    }
+  const getStatusColor = (isapproved) => {
+    if (isapproved === true) return 'success';
+    if (isapproved === false) return 'danger';
+    return 'warning';
   };
 
-  const getStatusLabel = (status) => {
-    if (!status) return 'Pending';
-    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  const getStatusLabel = (isapproved) => {
+    if (isapproved === true) return 'Approved';
+    if (isapproved === false) return 'Rejected';
+    return 'Pending';
   };
 
-  const handleUploadSuccess = (newComic) => {
+  const handleUploadSuccess = async (newComic) => {
     // Add the new comic to the list with approved status
     setComics(prev => [{
       ...newComic,
-      status: 'approved',
+      isapproved: true,
       isAdminUpload: true,
       uploadedBy: {
         ...newComic.uploadedBy,
         isAdmin: true
       }
     }, ...prev]);
+    await fetchComics(); // Refetch to get latest data
   };
 
   return (
@@ -169,36 +163,36 @@ const ComicsPage = () => {
                 </td>
                 <td>
                   <UploaderInfo>
-                    <div className="username">{comic.uploadedBy?.username || 'Unknown'}</div>
+                    <div className="username">{comic.uploadedBy || 'Unknown'}</div>
                     <div className="role">{comic.isAdminUpload ? 'Admin' : 'User'}</div>
                   </UploaderInfo>
                 </td>
                 <td>
-                  <StatusBadge $status={getStatusColor(comic.status)}>
-                    {getStatusLabel(comic.status)}
+                  <StatusBadge $status={getStatusColor(comic.isapproved)}>
+                    {getStatusLabel(comic.isapproved)}
                   </StatusBadge>
                 </td>
                 <td>
                   {!comic.isAdminUpload && (
                     <>
-                      <ActionButton 
-                        success 
-                        onClick={() => handleApprove(comic._id)}
-                        disabled={loading || comic.status === 'approved'}
-                        style={{ 
-                          opacity: comic.status === 'approved' ? 0.5 : 1,
-                          cursor: comic.status === 'approved' ? 'not-allowed' : 'pointer'
+                      <ActionButton
+                        success
+                        onClick={() => handleApprove(comic._id , comic?.uploadedBy)}
+                        disabled={loading || comic.isapproved === true}
+                        style={{
+                          opacity: comic.isapproved === true ? 0.5 : 1,
+                          cursor: comic.isapproved === true ? 'not-allowed' : 'pointer'
                         }}
                       >
                         Approve
                       </ActionButton>
-                      <ActionButton 
-                        danger 
+                      <ActionButton
+                        danger
                         onClick={() => handleReject(comic._id)}
-                        disabled={loading || comic.status === 'rejected'}
-                        style={{ 
-                          opacity: comic.status === 'rejected' ? 0.5 : 1,
-                          cursor: comic.status === 'rejected' ? 'not-allowed' : 'pointer'
+                        disabled={loading || comic.isapproved === false}
+                        style={{
+                          opacity: comic.isapproved === false ? 0.5 : 1,
+                          cursor: comic.isapproved === false ? 'not-allowed' : 'pointer'
                         }}
                       >
                         Reject

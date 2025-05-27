@@ -70,7 +70,7 @@ const LandingPage = () => {
           email: formData.email,
           password: formData.password
         });
-        
+
         // Show success message and switch to login
         setShowSuccess(true);
         setActiveTab('login');
@@ -90,12 +90,18 @@ const LandingPage = () => {
           email: formData.email,
           password: formData.password
         });
-        
+
+        console.log('User data:', userData);
         // Redirect based on user role
         if (userData.role === 'admin') {
           navigate('/admin/dashboard');
-        } else {
+        } else if (userData.role === 'user') {
           navigate('/user/dashboard');
+        } else if (userData.role === 'banned') {
+          throw new Error('Your account has been banned. Please contact support.');
+
+        } else {
+          throw new Error('Invalid user role');
         }
       }
     } catch (err) {
@@ -120,7 +126,7 @@ const LandingPage = () => {
         {isAdmin && (
           <AdminIndicator>Admin Login</AdminIndicator>
         )}
-        
+
         {/* Only show tabs for non-admin mode */}
         {!isAdmin && (
           <TabsContainer>
@@ -160,7 +166,7 @@ const LandingPage = () => {
               disabled={loading}
             />
           )}
-          
+
           <Input
             type="email"
             name="email"
@@ -170,7 +176,7 @@ const LandingPage = () => {
             required
             disabled={loading}
           />
-          
+
           <Input
             type="password"
             name="password"
@@ -190,13 +196,13 @@ const LandingPage = () => {
               isAdmin ? 'Login as Admin' : (activeTab === 'signup' ? 'Sign Up' : 'Login')
             )}
           </Button>
-          
+
           {!isAdmin && activeTab === 'signup' && (
             <PrivacyText>
               By signing up, you agree to our privacy and policy law
             </PrivacyText>
           )}
-          
+
           {showSuccess && (
             <SuccessMessage>
               Signed up successfully! Please login to continue.

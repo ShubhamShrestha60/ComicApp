@@ -3,7 +3,10 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 const connectDB = require('./utils/db');
-const comicRoutes = require('./routes/comicRoutes');
+const comicRoutes = require('./routes/comic.js');
+const comics = require('./routes/ComicsRoutes.js');
+const notifRoutes = require('./routes/notif.routes');
+const commentRoutes = require('./routes/comment.routes');
 
 // Load env vars
 dotenv.config();
@@ -25,7 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Request logging middleware
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`, {
     body: req.body,
     query: req.query,
@@ -51,19 +54,22 @@ app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/admin/users', require('./routes/adminUserRoutes'));
 app.use('/api/admin/comics', require('./routes/adminComicRoutes'));
 app.use('/api/comics', comicRoutes);
+app.use('/api/notifications', notifRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/get/comics', comics);
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Basic route
-app.get('/api', (req, res) => {
+app.get('/api', (_req, res) => {
   res.json({ message: 'Welcome to ComicZone API' });
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
   console.error('Error:', err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });

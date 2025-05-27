@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useAuth } from '../../context/AuthContext';
 import {
   PageHeader,
   PageTitle,
@@ -8,115 +11,144 @@ import {
   UsersTableHeader as ReviewsTableHeader,
   UsersTableRow as ReviewsTableRow,
   ActionButton,
-  RatingStars
+  PaginationContainer,
+  PaginationButton
 } from './AdminStyles';
+import styled from 'styled-components';
+
+const CommentContent = styled.div`
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .email {
+    font-size: 0.8em;
+    color: #666;
+  }
+`;
 
 const ReviewsPage = () => {
+  const { user } = useAuth();
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalComments, setTotalComments] = useState(0);
 
-  // Mock reviews data
-  const reviews = [
-    {
-      id: 1,
-      comicTitle: 'Dragon Slayer Chronicles',
-      reviewer: 'John Smith',
-      email: 'john@example.com',
-      rating: 5,
-      comment: 'Amazing storyline and character development! Can\'t wait for the next chapter.',
-      date: '2024-02-15'
-    },
-    {
-      id: 2,
-      comicTitle: 'Urban Tales',
-      reviewer: 'Emma Davis',
-      email: 'emma@example.com',
-      rating: 4,
-      comment: 'Great art style, but the pacing could be better.',
-      date: '2024-02-14'
-    },
-    {
-      id: 3,
-      comicTitle: 'Space Warriors',
-      reviewer: 'Mike Wilson',
-      email: 'mike@example.com',
-      rating: 3,
-      comment: 'Interesting concept but needs more world-building.',
-      date: '2024-02-14'
-    },
-    {
-      id: 4,
-      comicTitle: 'Mystic Academy',
-      reviewer: 'Sarah Lee',
-      email: 'sarah@example.com',
-      rating: 5,
-      comment: 'Perfect blend of magic and school life! Love every chapter.',
-      date: '2024-02-13'
-    },
-    {
-      id: 5,
-      comicTitle: 'Cyber Detective',
-      reviewer: 'Alex Turner',
-      email: 'alex@example.com',
-      rating: 4,
-      comment: 'Engaging mystery with great cyberpunk elements.',
-      date: '2024-02-13'
+  const API_URL = 'http://localhost:5000';
+
+  const fetchComments = async (page = 1, search = '') => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/api/comments/all?page=${page}&search=${search}`);
+      const { comments, totalPages, currentPage, totalComments } = response.data;
+      
+      setComments(comments);
+      setTotalPages(totalPages);
+      setCurrentPage(currentPage);
+      setTotalComments(totalComments);
+    } catch (error) {
+      toast.error('Error fetching comments: ' + error.message);
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  const filteredReviews = reviews.filter(review => 
-    review.comicTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    review.reviewer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    review.comment.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleDeleteReview = (reviewId) => {
-    console.log('Deleting review:', reviewId);
-    // TODO: Implement actual delete functionality
   };
+
+  useEffect(() => {
+    fetchComments(currentPage, searchQuery);
+  }, [currentPage, searchQuery]);
+
+  const handleDeleteComment = async (commentId) => {
+    if (window.confirm('Are you sure you want to delete this comment?')) {
+      try {
+        await axios.delete(`${API_URL}/api/comments/admin/${commentId}`);
+        toast.success('Comment deleted successfully');
+        fetchComments(currentPage, searchQuery);
+      } catch (error) {
+        toast.error('Error deleting comment: ' + (error.response?.data?.message || error.message));
+      }
+    }
+  };
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page on new search
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  if (loading) {
+    return <div>Loading comments...</div>;
+  }
 
   return (
     <>
       <PageHeader>
         <div>
-          <PageTitle>Reviews</PageTitle>
-          <Subtitle>Manage user reviews and ratings</Subtitle>
+          <PageTitle>Comments</PageTitle>
+          <Subtitle>Manage user comments ({totalComments} total)</Subtitle>
         </div>
         <SearchInput
           type="text"
-          placeholder="Search reviews..."
+          placeholder="Search comments..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={handleSearch}
         />
       </PageHeader>
 
       <ReviewsTable>
         <thead>
           <ReviewsTableHeader>
+            <th>USER</th>
             <th>COMIC</th>
-            <th>REVIEWER</th>
-            <th>RATING</th>
             <th>COMMENT</th>
             <th>DATE</th>
+            <th>TYPE</th>
             <th>ACTIONS</th>
           </ReviewsTableHeader>
         </thead>
         <tbody>
-          {filteredReviews.map(review => (
-            <ReviewsTableRow key={review.id}>
-              <td>{review.comicTitle}</td>
+          {comments.map(comment => (
+            <ReviewsTableRow key={comment._id}>
               <td>
-                <div>{review.reviewer}</div>
-                <div className="email">{review.email}</div>
+                <UserInfo>
+                  <img 
+                    src={comment.user?.profileImage || 'https://media.istockphoto.com/id/1495088043/vector/user-profile-icon-avatar-or-person-icon-profile-picture-portrait-symbol-default-portrait.jpg?s=612x612&w=0&k=20&c=dhV2p1JwmloBTOaGAtaA3AW1KSnjsdMt7-U_3EZElZ0='} 
+                    alt={comment.user?.username} 
+                    className="avatar"
+                  />
+                  <div>
+                    <div>{comment.user?.username || 'Unknown User'}</div>
+                  </div>
+                </UserInfo>
               </td>
+              <td>{comment.comic?.title || 'Unknown Comic'}</td>
               <td>
-                <RatingStars rating={review.rating} />
+                <CommentContent title={comment.content}>
+                  {comment.content}
+                </CommentContent>
               </td>
+              <td>{new Date(comment.createdAt).toLocaleDateString()}</td>
+              <td>{comment.parentComment ? 'Reply' : 'Comment'}</td>
               <td>
-                <div className="comment">{review.comment}</div>
-              </td>
-              <td>{new Date(review.date).toLocaleDateString()}</td>
-              <td>
-                <ActionButton danger onClick={() => handleDeleteReview(review.id)}>
+                <ActionButton danger onClick={() => handleDeleteComment(comment._id)}>
                   Delete
                 </ActionButton>
               </td>
@@ -124,6 +156,24 @@ const ReviewsPage = () => {
           ))}
         </tbody>
       </ReviewsTable>
+
+      {totalPages > 1 && (
+        <PaginationContainer>
+          <PaginationButton 
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </PaginationButton>
+          <span>Page {currentPage} of {totalPages}</span>
+          <PaginationButton 
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </PaginationButton>
+        </PaginationContainer>
+      )}
     </>
   );
 };

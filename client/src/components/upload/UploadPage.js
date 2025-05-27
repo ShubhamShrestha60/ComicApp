@@ -1,136 +1,94 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
+import React, { useState, useRef } from 'react';
 import Navbar from '../../components/shared/Navbar';
-import api from '../../services/api';
+import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const UploadContainer = styled.div`
-  margin-top: 80px; // To account for fixed navbar
-  padding: 2rem;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-`;
-
-const Title = styled.h1`
-  color: ${props => props.theme.colors.text};
-  margin-bottom: 2rem;
-  font-size: 2rem;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  position: relative; // Needed for absolute positioning of error message
-`;
-
-const Label = styled.label`
-  color: ${props => props.theme.colors.text};
-  font-weight: 600;
-`;
-
-const HelperText = styled.small`
-  color: ${props => props.theme.colors.text}99; // Slightly transparent text color
-  font-size: 0.8rem;
-  margin-top: -0.25rem; // Adjust spacing if needed
-`;
-
-const ErrorMessage = styled.span`
-  color: #ff6b6b; // A suitable error color
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-`;
-
-const Input = styled.input`
-  padding: 0.75rem;
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.colors.secondary};
-  background-color: ${props => props.theme.colors.background};
-  color: ${props => props.theme.colors.text};
-  font-family: ${props => props.theme.fonts.primary};
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.colors.primary};
-    box-shadow: 0 0 0 2px rgba(0, 173, 181, 0.2);
+const styles = {
+  uploadContainer: {
+    maxWidth: 600,
+    margin: '40px auto',
+    padding: 32,
+    background: '#fff',
+    borderRadius: 12,
+    boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
+    fontFamily: 'sans-serif'
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 700,
+    marginBottom: 24,
+    textAlign: 'center',
+    color: '#333'
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 18,
+    color: '#333'
+  },
+  formGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6
+  },
+  label: {
+    fontWeight: 600,
+    marginBottom: 2
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#888'
+  },
+  errorMessage: {
+    color: '#d32f2f',
+    fontSize: 13,
+    marginTop: 2
+  },
+  input: {
+    padding: '8px 10px',
+    border: '1px solid #ccc',
+    borderRadius: 5,
+    fontSize: 16
+  },
+  select: {
+    padding: '8px 10px',
+    border: '1px solid #ccc',
+    borderRadius: 5,
+    fontSize: 16
+  },
+  textArea: {
+    padding: '8px 10px',
+    border: '1px solid #ccc',
+    borderRadius: 5,
+    fontSize: 16,
+    minHeight: 80,
+    resize: 'vertical'
+  },
+  submitButton: {
+    marginTop: 18,
+    padding: '12px 0',
+    background: '#1976d2',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 6,
+    fontWeight: 700,
+    fontSize: 18,
+    cursor: 'pointer',
+    transition: 'background 0.2s'
+  },
+  fileInput: {
+    fontSize: 15
   }
-`;
-
-const Select = styled.select`
-  padding: 0.75rem;
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.colors.secondary};
-  background-color: ${props => props.theme.colors.background};
-  color: ${props => props.theme.colors.text};
-  font-family: ${props => props.theme.fonts.primary};
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.colors.primary};
-  }
-`;
-
-const TextArea = styled.textarea`
-  padding: 0.75rem;
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.colors.secondary};
-  background-color: ${props => props.theme.colors.background};
-  color: ${props => props.theme.colors.text};
-  font-family: ${props => props.theme.fonts.primary};
-  min-height: 150px;
-  resize: vertical;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.colors.primary};
-    box-shadow: 0 0 0 2px rgba(0, 173, 181, 0.2);
-  }
-`;
-
-const SubmitButton = styled.button`
-  background-color: ${props => props.theme.colors.primary};
-  color: ${props => props.theme.colors.text};
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #008c9e;
-  }
-`;
-
-const FileInput = styled.input`
-  &::file-selector-button {
-    background-color: ${props => props.theme.colors.secondary};
-    color: ${props => props.theme.colors.text};
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 1rem;
-    font-family: ${props => props.theme.fonts.primary};
-    transition: background-color 0.3s ease;
-
-    &:hover {
-      background-color: ${props => props.theme.colors.primary};
-    }
-  }
-`;
+};
 
 const UploadPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const coverInputRef = useRef(null);
+  const chaptersInputRef = useRef(null);
+  const [Loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     title: '',
     author: '',
@@ -140,7 +98,7 @@ const UploadPage = () => {
     coverImage: null,
     chapters: []
   });
-  const [summaryError, setSummaryError] = useState(''); // State for summary validation error
+  const [summaryError, setSummaryError] = useState('');
 
   const genres = [
     'Action', 'Adventure', 'Comedy', 'Drama', 'Fantasy',
@@ -150,73 +108,62 @@ const UploadPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-
-    // Clear summary error when user types in the summary field
-    if (name === 'summary') {
-      setSummaryError('');
-    }
+    if (name === 'summary') setSummaryError('');
   };
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
-    // Handle single file for coverImage, multiple for chapters
-    setFormData(prev => ({ ...prev, [name]: name === 'coverImage' ? files[0] : files }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'coverImage' ? files[0] : Array.from(files)
+    }));
   };
 
   const handleGenreChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
-    setFormData(prev => ({ ...prev, genres: selectedOptions }));
-  };
-
-  const countWords = (text) => {
-    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+    const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
+    setFormData(prev => ({ ...prev, genres: selected }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Check if user is logged in
+    setLoading(true);
+
     if (!user) {
-      alert('You must be logged in to upload a comic');
+      alert('Login required to upload a comic');
       navigate('/');
       return;
     }
-    
-    // Validate form data
-    if (!formData.title || !formData.author || !formData.genres.length || !formData.status || !formData.summary || !formData.coverImage || !formData.chapters.length) {
-      alert('Please fill in all required fields');
+
+    if (!formData.title || !formData.author || !formData.status || !formData.summary || !formData.coverImage || formData.genres.length === 0 || formData.chapters.length === 0) {
+      alert('Please complete all required fields');
       return;
     }
 
-    // Validate summary length
     if (formData.summary.length < 100) {
-      alert('Summary must be at least 100 characters long');
+      setSummaryError('Summary must be at least 100 characters.');
       return;
     }
-  
+
     const data = new FormData();
     data.append('title', formData.title);
     data.append('author', formData.author);
     data.append('status', formData.status);
     data.append('summary', formData.summary);
     data.append('uploadedBy', user._id);
-  
-    formData.genres.forEach(genre => data.append('genres', genre));
     data.append('coverImage', formData.coverImage);
-    for (let i = 0; i < formData.chapters.length; i++) {
-      data.append('chapters', formData.chapters[i]);
-    }
-  
+    formData.genres.forEach(genre => data.append('genres', genre));
+    (formData.chapters || []).forEach(file => data.append('chapters', file));
+
     try {
-      const response = await api.post('/upload', data, {
+      const response = await axios.post('http://localhost:5000/api/comics/upload', data, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-  
+
       if (response.status === 200 || response.status === 201) {
         alert('Comic uploaded successfully!');
-        // Optional: reset form
+        setLoading(false);
         setFormData({
           title: '',
           author: '',
@@ -226,25 +173,28 @@ const UploadPage = () => {
           coverImage: null,
           chapters: []
         });
+        // Reset file inputs
+        if (coverInputRef.current) coverInputRef.current.value = '';
+        if (chaptersInputRef.current) chaptersInputRef.current.value = '';
       } else {
-        alert(response.data.error || 'Upload failed');
+        alert(response.data.error || 'Upload failed.');
       }
-    } catch (error) {
-      console.error('Upload failed:', error);
-      alert('Something went wrong. Please try again later.');
+    } catch (err) {
+      console.error(err);
+      alert('Upload error. Please try again later.');
     }
   };
-  
 
   return (
     <>
       <Navbar />
-      <UploadContainer>
-        <Title>Upload Comic</Title>
-        <Form onSubmit={handleSubmit}>
-          <FormGroup>
-            <Label htmlFor="title">Comic Title</Label>
-            <Input
+      <div style={styles.uploadContainer}>
+        <h1 style={styles.title}>Upload Comic</h1>
+        <form style={styles.form} onSubmit={handleSubmit}>
+          <div style={styles.formGroup}>
+            <label style={styles.label} htmlFor="title">Comic Title</label>
+            <input
+              style={styles.input}
               type="text"
               id="title"
               name="title"
@@ -252,11 +202,12 @@ const UploadPage = () => {
               onChange={handleInputChange}
               required
             />
-          </FormGroup>
+          </div>
 
-          <FormGroup>
-            <Label htmlFor="author">Author Name</Label>
-            <Input
+          <div style={styles.formGroup}>
+            <label style={styles.label} htmlFor="author">Author</label>
+            <input
+              style={styles.input}
               type="text"
               id="author"
               name="author"
@@ -264,11 +215,12 @@ const UploadPage = () => {
               onChange={handleInputChange}
               required
             />
-          </FormGroup>
+          </div>
 
-          <FormGroup>
-            <Label htmlFor="genres">Genres (Hold Ctrl/Cmd to select multiple)</Label>
-            <Select
+          <div style={styles.formGroup}>
+            <label style={styles.label} htmlFor="genres">Genres</label>
+            <select
+              style={styles.select}
               id="genres"
               name="genres"
               multiple
@@ -276,69 +228,73 @@ const UploadPage = () => {
               onChange={handleGenreChange}
               required
             >
-              {genres.map(genre => (
-                <option key={genre} value={genre}>{genre}</option>
-              ))}
-            </Select>
-          </FormGroup>
+              {genres.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
 
-          <FormGroup>
-            <Label htmlFor="status">Status</Label>
-            <Select
+          <div style={styles.formGroup}>
+            <label style={styles.label} htmlFor="status">Status</label>
+            <select
+              style={styles.select}
               id="status"
               name="status"
               value={formData.status}
               onChange={handleInputChange}
               required
             >
-              <option value="">Select Status</option>
+              <option value="">Select status</option>
               <option value="Ongoing">Ongoing</option>
               <option value="Completed">Completed</option>
-            </Select>
-          </FormGroup>
+            </select>
+          </div>
 
-          <FormGroup>
-            <Label htmlFor="summary">Short Summary</Label>
-            <HelperText>Minimum 100 words required.</HelperText>
-            <TextArea
+          <div style={styles.formGroup}>
+            <label style={styles.label} htmlFor="summary">Summary</label>
+            <small style={styles.helperText}>At least 100 characters</small>
+            <textarea
+              style={styles.textArea}
               id="summary"
               name="summary"
               value={formData.summary}
               onChange={handleInputChange}
-              required
             />
-            {summaryError && <ErrorMessage>{summaryError}</ErrorMessage>} {/* Display error */}
-          </FormGroup>
+            {summaryError && <span style={styles.errorMessage}>{summaryError}</span>}
+          </div>
 
-          <FormGroup>
-            <Label htmlFor="coverImage">Cover Image</Label>
-            <FileInput
+          <div style={styles.formGroup}>
+            <label style={styles.label} htmlFor="coverImage">Cover Image</label>
+            <input
+              style={styles.fileInput}
               type="file"
               id="coverImage"
               name="coverImage"
               accept="image/*"
               onChange={handleFileChange}
               required
+              ref={coverInputRef}
             />
-          </FormGroup>
+          </div>
 
-          <FormGroup>
-            <Label htmlFor="chapters">Upload Chapters</Label>
-            <FileInput
+          <div style={styles.formGroup}>
+            <label style={styles.label} htmlFor="chapters">Comic Chapters (PDF)</label>
+            <input
+              style={styles.fileInput}
               type="file"
               id="chapters"
               name="chapters"
-              accept=".pdf,.zip,.cbz"
+              accept=".pdf"
               multiple
               onChange={handleFileChange}
+              required
+              ref={chaptersInputRef}
             />
-          </FormGroup>
+          </div>
 
-          <SubmitButton type="submit">Upload Comic</SubmitButton>
-        </Form>
-      </UploadContainer>
+          <button style={styles.submitButton} disabled={Loading} type="submit">{Loading?"Uploading...":"Upload Comic"}</button>
+        </form>
+      </div>
     </>
   );
 };
 
-export default UploadPage; 
+export default UploadPage;

@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
 export const Header = styled.header`
-  background-color: #2a2f35;
+  background-color: ${props => props.theme.colors.secondary};
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
@@ -23,14 +23,14 @@ export const LeftSection = styled.div`
 export const Logo = styled(Link)`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #00bcd4;
+  color: ${props => props.theme.colors.primary};
   text-decoration: none;
   cursor: pointer;
   margin-right: 2rem;
 `;
 
 export const NavLink = styled(Link)`
-  color: #ffffff;
+  color: ${props => props.theme.colors.text};
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s ease;
@@ -39,11 +39,11 @@ export const NavLink = styled(Link)`
   position: relative;
 
   &:hover {
-    color: #00bcd4;
+    color: ${props => props.theme.colors.primary};
   }
 
   &.active {
-    color: #00bcd4;
+    color: ${props => props.theme.colors.primary};
 
     &:after {
       content: '';
@@ -52,7 +52,7 @@ export const NavLink = styled(Link)`
       left: 0;
       width: 100%;
       height: 2px;
-      background-color: #00bcd4;
+      background-color: ${props => props.theme.colors.primary};
       border-radius: 2px;
     }
   }
@@ -69,20 +69,20 @@ export const CenterSection = styled.div`
 export const SearchBar = styled.input`
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
-  border: 1px solid #00bcd4;
-  background-color: #1a1f25;
-  color: #ffffff;
+  border: 1px solid ${props => props.theme.colors.primary};
+  background-color: ${props => props.theme.colors.background};
+  color: ${props => props.theme.colors.text};
   width: 100%;
   min-width: 300px;
 
   &:focus {
     outline: none;
-    border-color: #00bcd4;
-    box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.2);
+    border-color: ${props => props.theme.colors.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.colors.primary}33;
   }
 
   &::placeholder {
-    color: #6c757d;
+    color: ${props => props.theme.colors.text}99;
   }
 `;
 
@@ -93,8 +93,8 @@ export const RightSection = styled.div`
 `;
 
 export const UploadButton = styled.button`
-  background-color: #00bcd4;
-  color: #ffffff;
+  background-color: ${props => props.theme.colors.primary};
+  color: ${props => props.theme.colors.text};
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
@@ -103,7 +103,7 @@ export const UploadButton = styled.button`
   font-weight: 500;
 
   &:hover {
-    background-color: #008c9e;
+    background-color: ${props => props.theme.colors.primary}dd;
   }
 `;
 
@@ -116,19 +116,19 @@ export const UserAvatar = styled.div`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #00bcd4;
+  background-color: ${props => props.theme.colors.primary};
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #ffffff;
+  color: ${props => props.theme.colors.text};
 `;
 
 export const DropdownContent = styled.div`
   position: absolute;
   right: 0;
   top: 120%;
-  background-color: #2a2f35;
+  background-color: ${props => props.theme.colors.secondary};
   min-width: 200px;
   box-shadow: 0 8px 16px rgba(0,0,0,0.2);
   border-radius: 8px;
@@ -138,7 +138,7 @@ export const DropdownContent = styled.div`
 `;
 
 export const DropdownItem = styled(Link)`
-  color: #ffffff;
+  color: ${props => props.theme.colors.text};
   padding: 0.75rem 1rem;
   text-decoration: none;
   display: block;
@@ -148,8 +148,8 @@ export const DropdownItem = styled(Link)`
   font-size: 0.95rem;
 
   &:hover {
-    background-color: rgba(0, 188, 212, 0.1);
-    color: #00bcd4;
+    background-color: ${props => props.theme.colors.primary}22;
+    color: ${props => props.theme.colors.primary};
   }
 
   &:not(:last-child) {

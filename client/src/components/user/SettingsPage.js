@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import Navbar from '../../components/shared/Navbar';
+import { useColorBlind } from '../../ColorBlindContext';
 
 const PageContainer = styled.div`
   margin-top: 80px; // Account for fixed navbar
@@ -75,16 +76,10 @@ const Select = styled.select`
 // Add more setting controls like ToggleSwitch, etc. if needed
 
 const SettingsPage = () => {
-  // State for accessibility settings
-  const [colorblindMode, setColorblindMode] = useState('none'); // Default: 'none'
-
-  // Add state for other settings later (e.g., theme, notifications)
+  const { mode, setMode } = useColorBlind();
 
   const handleColorblindModeChange = (e) => {
-    const newMode = e.target.value;
-    setColorblindMode(newMode);
-    // TODO: Apply the colorblind mode logic globally
-    console.log('Colorblind mode changed to:', newMode);
+    setMode(e.target.value);
   };
 
   return (
@@ -102,7 +97,7 @@ const SettingsPage = () => {
             </div>
             <Select
               id="colorblind-mode"
-              value={colorblindMode}
+              value={mode}
               onChange={handleColorblindModeChange}
             >
               <option value="none">None</option>

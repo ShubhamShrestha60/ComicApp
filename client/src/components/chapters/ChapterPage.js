@@ -78,12 +78,15 @@ const NavButton = styled.button`
   }
 `;
 
-const PageImage = styled.img`
+const PDFFrame = styled.iframe`
   width: 100%;
   max-width: 800px;
+  height: 80vh;
   margin: 1rem auto;
   display: block;
   border-radius: 8px;
+  border: none;
+  background: #fff;
 `;
 
 const ChapterPage = () => {
@@ -91,65 +94,43 @@ const ChapterPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [comic, setComic] = useState(null);
-  const [currentChapter, setCurrentChapter] = useState(null);
 
-  // Dummy data - replace with API call
+  // Use index as chapter number (assume chapterNumber is 1-based in URL)
+  const chapterIdx = parseInt(chapterNumber, 10) - 1;
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      // Simulate API call
-      const comicData = {
-        id: comicId,
-        title: "The Amazing Comic",
-        chapters: [
-          { 
-            number: 1, 
-            title: "The Beginning",
-            pages: ["/page1.jpg", "/page2.jpg"]
-          },
-          { 
-            number: 2, 
-            title: "The Journey",
-            pages: ["/page3.jpg", "/page4.jpg"]
-          },
-          { 
-            number: 3, 
-            title: "The Challenge",
-            pages: ["/page5.jpg", "/page6.jpg"]
-          },
-        ]
-      };
-
-      setComic(comicData);
-      setCurrentChapter(
-        comicData.chapters.find(ch => ch.number === parseInt(chapterNumber))
-      );
+      try {
+        const res = await fetch(`http://localhost:5000/api/get/comics/${comicId}`);
+        const data = await res.json();
+        setComic(data);
+      } catch (err) {
+        setComic(null);
+      }
       setLoading(false);
     };
 
     fetchData();
   }, [comicId, chapterNumber]);
 
-  if (loading || !comic || !currentChapter) {
+  if (loading || !comic || !comic.chapters || !comic.chapters[chapterIdx]) {
     return <div>Loading...</div>;
   }
 
-  const currentChapterIndex = comic.chapters.findIndex(
-    ch => ch.number === parseInt(chapterNumber)
-  );
-  
-  const hasNextChapter = currentChapterIndex < comic.chapters.length - 1;
-  const hasPrevChapter = currentChapterIndex > 0;
+  const hasNextChapter = chapterIdx < comic.chapters.length - 1;
+  const hasPrevChapter = chapterIdx > 0;
 
   const navigateToChapter = (direction) => {
-    const newIndex = currentChapterIndex + (direction === 'next' ? 1 : -1);
-    const newChapter = comic.chapters[newIndex];
-    navigate(`/comic/${comicId}/chapter/${newChapter.number}`);
+    const newIndex = chapterIdx + (direction === 'next' ? 1 : -1);
+    navigate(`/comic/${comicId}/chapter/${newIndex + 1}`);
   };
 
   const returnToComicDetail = () => {
     navigate(`/comic/${comicId}`);
   };
+
+  const pdfUrl = comic.chapters[chapterIdx];
 
   return (
     <>
@@ -162,20 +143,18 @@ const ChapterPage = () => {
           <ChapterInfo>
             <ComicTitle>{comic.title}</ComicTitle>
             <ChapterTitle>
-              Chapter {currentChapter.number}: {currentChapter.title}
+              Chapter {chapterIdx + 1}
             </ChapterTitle>
           </ChapterInfo>
-          <div style={{ width: '100px' }}></div> {/* Spacer for centering */}
+          <div style={{ width: '100px' }}></div>
         </ReaderHeader>
 
         <ReaderContent>
-          {currentChapter.pages.map((page, index) => (
-            <PageImage 
-              key={index}
-              src={page} 
-              alt={`Page ${index + 1}`}
-            />
-          ))}
+          {pdfUrl ? (
+            <PDFFrame src={pdfUrl} title={`Chapter ${chapterIdx + 1} PDF`} />
+          ) : (
+            <div>No PDF available for this chapter.</div>
+          )}
         </ReaderContent>
 
         <NavigationBar>
@@ -202,4 +181,4 @@ const ChapterPage = () => {
   );
 };
 
-export default ChapterPage; 
+export default ChapterPage;

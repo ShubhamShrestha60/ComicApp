@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 export const NavLink = styled.a`
-  color: #ffffff;
+  color: ${props => props.theme.colors.text};
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s ease;
@@ -10,11 +10,11 @@ export const NavLink = styled.a`
   position: relative;
 
   &:hover {
-    color: #00bcd4;
+    color: ${props => props.theme.colors.primary};
   }
 
   &.active {
-    color: #00bcd4;
+    color: ${props => props.theme.colors.primary};
 
     &:after {
       content: '';
@@ -23,7 +23,7 @@ export const NavLink = styled.a`
       left: 0;
       width: 100%;
       height: 2px;
-      background-color: #00bcd4;
+      background-color: ${props => props.theme.colors.primary};
       border-radius: 2px;
     }
   }
@@ -31,8 +31,8 @@ export const NavLink = styled.a`
 
 export const DashboardContainer = styled.div`
   min-height: 100vh;
-  background-color: #1a1f25;
-  color: #ffffff;
+  background-color: ${props => props.theme.colors.background};
+  color: ${props => props.theme.colors.text};
   display: flex;
   flex-direction: column;
   position: relative;
@@ -40,7 +40,7 @@ export const DashboardContainer = styled.div`
 `;
 
 export const Header = styled.header`
-  background-color: #2a2f35;
+  background-color: ${props => props.theme.colors.secondary};
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
@@ -75,7 +75,7 @@ export const RightSection = styled.div`
 export const Logo = styled.div`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #00bcd4;
+  color: ${props => props.theme.colors.primary};
   cursor: pointer;
   margin-right: 2rem;
 `;
@@ -89,26 +89,26 @@ export const NavLinks = styled.nav`
 export const SearchBar = styled.input`
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
-  border: 1px solid #00bcd4;
-  background-color: #1a1f25;
-  color: #ffffff;
+  border: 1px solid ${props => props.theme.colors.primary};
+  background-color: ${props => props.theme.colors.background};
+  color: ${props => props.theme.colors.text};
   width: 100%;
   min-width: 300px;
 
   &:focus {
     outline: none;
-    border-color: #00bcd4;
-    box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.2);
+    border-color: ${props => props.theme.colors.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.colors.primary}33;
   }
 
   &::placeholder {
-    color: #6c757d;
+    color: ${props => props.theme.colors.text}99;
   }
 `;
 
 export const UploadButton = styled.button`
-  background-color: #00bcd4;
-  color: #ffffff;
+  background-color: ${props => props.theme.colors.primary};
+  color: ${props => props.theme.colors.text};
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
@@ -117,7 +117,7 @@ export const UploadButton = styled.button`
   font-weight: 500;
 
   &:hover {
-    background-color: #008c9e;
+    background-color: ${props => props.theme.colors.primary}dd;
   }
 `;
 
@@ -130,19 +130,18 @@ export const UserAvatar = styled.div`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #00bcd4;
+  background-color: ${props => props.theme.colors.primary};
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  color: #ffffff;
+  color: ${props => props.theme.colors.text};
 `;
 
 export const DropdownContent = styled.div`
   position: absolute;
   right: 0;
   top: 120%;
-  background-color: #2a2f35;
+  background-color: ${props => props.theme.colors.secondary};
   min-width: 200px;
   box-shadow: 0 8px 16px rgba(0,0,0,0.2);
   border-radius: 8px;
@@ -152,7 +151,7 @@ export const DropdownContent = styled.div`
 `;
 
 export const DropdownItem = styled.a`
-  color: #ffffff;
+  color: ${props => props.theme.colors.text};
   padding: 0.75rem 1rem;
   text-decoration: none;
   display: block;
@@ -162,8 +161,8 @@ export const DropdownItem = styled.a`
   font-size: 0.95rem;
 
   &:hover {
-    background-color: rgba(0, 188, 212, 0.1);
-    color: #00bcd4;
+    background-color: ${props => props.theme.colors.primary}22;
+    color: ${props => props.theme.colors.primary};
   }
 
   &:not(:last-child) {
@@ -186,7 +185,7 @@ export const WelcomeSection = styled.section`
 
 export const WelcomeMessage = styled.h1`
   font-size: 2rem;
-  color: #00bcd4;
+  color: ${props => props.theme.colors.primary};
   margin-bottom: 1rem;
 `;
 
@@ -205,7 +204,7 @@ export const SectionTitle = styled.h2`
 `;
 
 export const ComicCard = styled.div`
-  background-color: #2a2f35;
+  background-color: ${props => props.theme.colors.secondary};
   border-radius: 12px;
   overflow: hidden;
   transition: transform 0.3s ease;
@@ -233,7 +232,7 @@ export const ComicInfo = styled.div`
 export const ComicTitle = styled.h3`
   font-size: 1.25rem;
   margin: 0;
-  color: #ffffff;
+  color: ${props => props.theme.colors.text};
   font-weight: 500;
 `;
 
@@ -241,13 +240,13 @@ export const ComicStats = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #4ade80;
+  color: ${props => props.theme.colors.primary};
   font-size: 0.875rem;
   margin-top: 0.5rem;
 
   &::before {
     content: '♥';
-    color: #4ade80;
+    color: ${props => props.theme.colors.primary};
   }
 `;
 
@@ -256,7 +255,7 @@ export const GenresSection = styled.section`
 `;
 
 export const Footer = styled.footer`
-  background-color: #2a2f35;
+  background-color: ${props => props.theme.colors.secondary};
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -372,7 +371,7 @@ export const Username = styled.h2`
 `;
 
 export const Email = styled.p`
-  color: #6c757d;
+  color: ${props => props.theme.colors.text}99;
   margin-bottom: 1rem;
 `;
 
@@ -388,7 +387,7 @@ export const StatsSection = styled.section`
 `;
 
 export const StatCard = styled.div`
-  background-color: #2a2f35;
+  background-color: ${props => props.theme.colors.secondary};
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
@@ -397,12 +396,12 @@ export const StatCard = styled.div`
 export const StatValue = styled.div`
   font-size: 2rem;
   font-weight: 700;
-  color: #00bcd4;
+  color: ${props => props.theme.colors.primary};
   margin-bottom: 0.5rem;
 `;
 
 export const StatLabel = styled.div`
-  color: #6c757d;
+  color: ${props => props.theme.colors.text}99;
   font-size: 0.9rem;
 `;
 
@@ -417,8 +416,8 @@ export const ActionButtons = styled.div`
 `;
 
 export const Button = styled.button`
-  background-color: ${props => props.primary ? '#00bcd4' : '#2a2f35'};
-  color: #ffffff;
+  background-color: ${props => props.primary ? props.theme.colors.primary : props.theme.colors.secondary};
+  color: ${props => props.theme.colors.text};
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -427,7 +426,9 @@ export const Button = styled.button`
   font-weight: 500;
   
   &:hover {
-    background-color: ${props => props.primary ? '#008c9e' : '#3a3f45'};
+    background-color: ${props => props.primary 
+      ? `${props.theme.colors.primary}dd`
+      : `${props.theme.colors.secondary}dd`};
   }
 `;
 
@@ -442,7 +443,7 @@ export const RecentUploads = styled.div`
 `;
 
 export const UploadCard = styled.div`
-  background-color: #2a2f35;
+  background-color: ${props => props.theme.colors.secondary};
   border-radius: 12px;
   overflow: hidden;
   transition: transform 0.3s ease;
@@ -464,11 +465,11 @@ export const UploadInfo = styled.div`
 
 export const UploadTitle = styled.h3`
   font-size: 1.1rem;
-  color: #ffffff;
+  color: ${props => props.theme.colors.text};
   margin-bottom: 0.5rem;
 `;
 
 export const UploadDate = styled.p`
-  color: #6c757d;
+  color: ${props => props.theme.colors.text}99;
   font-size: 0.8rem;
 `;
