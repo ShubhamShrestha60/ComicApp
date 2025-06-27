@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
 import NotificationModal from '../NotificationModal';
 import {
   DashboardContainer,
@@ -27,33 +26,23 @@ import {
   FooterContent,
   FooterSection,
   SocialLinks,
-  ProfileSection,
-  ProfileImage,
-  ProfileInfo,
-  Username,
-  Email,
-  StatsSection,
-  StatCard,
-  StatValue,
-  StatLabel,
-  ActionButtons,
-  Button,
-  UploadSection,
-  RecentUploads,
-  UploadCard,
-  UploadImage,
-  UploadInfo,
-  UploadTitle,
-  UploadDate
+
 } from './DashboardStyles';
 import axios from 'axios';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_ENDPOINTS = {
+  APPROVED_COMICS: `${API_BASE_URL}/api/get/comics/approved`,
+  NOTIFICATIONS: `${API_BASE_URL}/api/notifications`,
+  UNREAD_COUNT: `${API_BASE_URL}/api/notifications/unread/count`
+};
 
 const UserDashboard = () => {
   const navigate = useNavigate();
   const { user, updateProfileImage } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [error, setError] = useState(null);
   const [comics, setComics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -64,10 +53,10 @@ const UserDashboard = () => {
   const fetchApprovedComics = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5000/api/get/comics/approved');
+      const res = await axios.get(API_ENDPOINTS.APPROVED_COMICS);
       setComics(res.data);
     } catch (error) {
-      console.error('Failed to fetch approved comics:', error);
+      setError('Failed to fetch comics. Please try again later.');
       setComics([]);
     } finally {
       setLoading(false);
@@ -79,14 +68,14 @@ const UserDashboard = () => {
     try {
       setIsLoadingNotifications(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/notifications', {
+      const response = await axios.get(API_ENDPOINTS.NOTIFICATIONS, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       setNotifications(response.data);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      setError('Failed to fetch notifications. Please try again later.');
     } finally {
       setIsLoadingNotifications(false);
     }
@@ -96,7 +85,7 @@ const UserDashboard = () => {
   const fetchUnreadCount = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/notifications/unread/count', {
+      const response = await axios.get(API_ENDPOINTS.UNREAD_COUNT, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -111,7 +100,7 @@ const UserDashboard = () => {
   const markAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:5000/api/notifications/${notificationId}/read`, {}, {
+      await axios.patch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {}, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -133,7 +122,7 @@ const UserDashboard = () => {
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch('http://localhost:5000/api/notifications/read-all', {}, {
+      await axios.patch(`${API_BASE_URL}/api/notifications/read-all`, {}, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -152,7 +141,7 @@ const UserDashboard = () => {
   const deleteNotification = async (notificationId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/notifications/${notificationId}`, {
+      await axios.delete(`${API_BASE_URL}/api/notifications/${notificationId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -175,7 +164,7 @@ const UserDashboard = () => {
   const deleteAllNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete('http://localhost:5000/api/notifications', {
+      await axios.delete(API_ENDPOINTS.NOTIFICATIONS, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -202,39 +191,7 @@ const UserDashboard = () => {
     setSearchQuery(e.target.value);
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-    }
-  };
 
-  const handleImageUpload = async () => {
-    if (selectedFile) {
-      try {
-        await updateProfileImage(selectedFile);
-        setSelectedFile(null);
-      } catch (error) {
-        console.error('Error uploading image:', error);
-      }
-    }
-  };
-
-  // Dummy data for recent uploads
-  const recentUploads = [
-    {
-      id: 1,
-      title: 'Chapter 1: The Beginning',
-      image: 'https://via.placeholder.com/150',
-      date: '2024-03-15'
-    },
-    {
-      id: 2,
-      title: 'Chapter 2: The Journey',
-      image: 'https://via.placeholder.com/150',
-      date: '2024-03-14'
-    }
-  ];
 
   const filteredComics = comics.filter(comic =>
     comic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -267,16 +224,7 @@ const UserDashboard = () => {
         <RightSection>
           <div 
             onClick={handleNotificationsClick}
-            style={{ 
-              cursor: 'pointer',
-              padding: '0.5rem 1rem',
-              borderRadius: '4px',
-              transition: 'background-color 0.2s',
-              position: 'relative',
-              ':hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.05)'
-              }
-            }}
+            className="notification-button"
           >
             Notifications {unreadCount > 0 && (
               <span style={{
@@ -300,7 +248,7 @@ const UserDashboard = () => {
             <UserAvatar onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
               {user?.username ? user.username.charAt(0).toUpperCase() : '?'}
             </UserAvatar>
-            <DropdownContent isOpen={isDropdownOpen}>
+            <DropdownContent $isOpen={isDropdownOpen}>
               <DropdownItem as={Link} to="/profile">Profile</DropdownItem>
               <DropdownItem as={Link} to="/favorites">Favorites</DropdownItem>
               <DropdownItem as={Link} to="/downloads">Downloads</DropdownItem>
@@ -416,6 +364,18 @@ const UserDashboard = () => {
       />
 
       <MainContent>
+        {error && (
+          <div style={{
+            backgroundColor: '#ffebee',
+            color: '#c62828',
+            padding: '1rem',
+            marginBottom: '1rem',
+            borderRadius: '4px',
+            textAlign: 'center'
+          }}>
+            {error}
+          </div>
+        )}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '2rem' }}>Loading comics...</div>
         ) : filteredComics.length === 0 ? (
@@ -475,10 +435,10 @@ const UserDashboard = () => {
           <FooterSection>
             <h3>Connect With Us</h3>
             <SocialLinks>
-              <a href="#" aria-label="Facebook">📘</a>
-              <a href="#" aria-label="Twitter">🐦</a>
-              <a href="#" aria-label="Instagram">📷</a>
-              <a href="#" aria-label="Discord">💬</a>
+              <a href="#" aria-label="Facebook" className="social-link">Facebook</a>
+              <a href="#" aria-label="Twitter" className="social-link">Twitter</a>
+              <a href="#" aria-label="Instagram" className="social-link">Instagram</a>
+              <a href="#" aria-label="Discord" className="social-link">Discord</a>
             </SocialLinks>
           </FooterSection>
         </FooterContent>
@@ -487,4 +447,4 @@ const UserDashboard = () => {
   );
 };
 
-export default UserDashboard; 
+export default UserDashboard;

@@ -15,7 +15,8 @@ import {
   SuccessMessage,
   PrivacyText,
   AdminIndicator,
-  ErrorMessage
+  ErrorMessage,
+  ComicDecoration
 } from './LandingStyles';
 
 const LandingPage = () => {
@@ -119,6 +120,11 @@ const LandingPage = () => {
 
   return (
     <LandingContainer>
+      <ComicDecoration className="top-left" />
+      <ComicDecoration className="top-right" />
+      <ComicDecoration className="bottom-left" />
+      <ComicDecoration className="bottom-right" />
+      
       <WelcomeTitle>Welcome to ComicZone!</WelcomeTitle>
       <Tagline>Explore. Create. Read. Your comics, your world.</Tagline>
 
@@ -131,7 +137,7 @@ const LandingPage = () => {
         {!isAdmin && (
           <TabsContainer>
             <Tab
-              active={activeTab === 'signup'}
+              $active={activeTab === 'signup'}
               onClick={() => {
                 setActiveTab('signup');
                 setShowSuccess(false);
@@ -141,7 +147,7 @@ const LandingPage = () => {
               Sign Up
             </Tab>
             <Tab
-              active={activeTab === 'login'}
+              $active={activeTab === 'login'}
               onClick={() => {
                 setActiveTab('login');
                 setShowSuccess(false);
@@ -211,13 +217,13 @@ const LandingPage = () => {
         </Form>
 
         <SwitchLink>
-          <a onClick={toggleAdmin}>
+          <button onClick={toggleAdmin}>
             {isAdmin ? 'Switch to User' : 'Switch to Admin'}
-          </a>
+          </button>
         </SwitchLink>
       </AuthContainer>
     </LandingContainer>
   );
 };
 
-export default LandingPage; 
+export default LandingPage;

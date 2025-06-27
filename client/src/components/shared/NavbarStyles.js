@@ -133,7 +133,7 @@ export const DropdownContent = styled.div`
   box-shadow: 0 8px 16px rgba(0,0,0,0.2);
   border-radius: 8px;
   padding: 0.5rem;
-  display: ${props => props.isOpen ? 'block' : 'none'};
+  display: ${({ isOpen }) => isOpen ? 'block' : 'none'};
   z-index: 1000;
 `;
 
@@ -155,4 +155,4 @@ export const DropdownItem = styled(Link)`
   &:not(:last-child) {
     margin-bottom: 0.25rem;
   }
-`; 
+`;
